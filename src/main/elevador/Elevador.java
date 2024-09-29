@@ -96,4 +96,6 @@ public class Elevador {
     }
 
     public EstadoElevador getEstadoAtual() {
-        return estado
+        return estadoAtual;
+    }
+}
