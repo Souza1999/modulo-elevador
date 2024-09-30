@@ -4,7 +4,7 @@ Este projeto implementa um sistema de controle de elevador usando **padrões de 
 
 ## Design Patterns Aplicados
 
-### 1. **Singleton**
+## 1. **Singleton**
 O padrão **Singleton** é aplicado na classe `Elevador`, garantindo que apenas uma instância do elevador seja criada ao longo de todo o programa. Isso é importante para garantir que todos os usuários, internos e externos, estejam interagindo com a mesma instância do elevador.
 
 #### Implementação:
@@ -53,7 +53,7 @@ public class Painel implements Observer {
 }
 ```
 
-3. State
+## 3. **State**
 O padrão State é utilizado para gerenciar o comportamento do elevador dependendo do seu estado atual. O elevador pode estar no estado de subindo, descendo ou parado, e cada um desses estados possui comportamentos específicos para mover o elevador, abrir ou fechar a porta.
 
 Implementação:
