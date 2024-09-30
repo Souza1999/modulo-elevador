@@ -87,3 +87,7 @@ public class Subindo implements EstadoElevador {
 }
 ```
 
+## Diagrama UML
+
+![Diagrama UML](./diagramaUML.png)
+
