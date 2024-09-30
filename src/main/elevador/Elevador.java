@@ -5,29 +5,33 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class Elevador {
-    private static Elevador instance;
+public class ElevadorOLD {
+    private static ElevadorOLD instance;
     private int andarAtual;
     private int totalAndares;
     private boolean portaAberta;
     private EstadoElevador estadoAtual;
     private List<Integer> filaRequisicoes;
     private List<Observer> observadores; // Lista de observadores
+    private List<Integer> requisicoesExternasSubir;
+    private List<Integer> requisicoesExternasDescer;
 
     // Construtor privado para garantir o padrão Singleton
-    private Elevador(int totalAndares) {
+    private ElevadorOLD(int totalAndares) {
         this.andarAtual = 0; // O elevador começa no térreo
         this.totalAndares = totalAndares;
         this.portaAberta = true; // Começa com a porta aberta
         this.estadoAtual = new Parado(); // Estado inicial do elevador
         this.filaRequisicoes = new ArrayList<>();
         this.observadores = new ArrayList<>(); // Inicializa a lista de observadores
+        this.requisicoesExternasSubir = new ArrayList<>();
+        this.requisicoesExternasDescer = new ArrayList<>();
     }
 
     // Método para obter a única instância do elevador (Singleton)
-    public static Elevador getInstance(int totalAndares) {
+    public static ElevadorOLD getInstance(int totalAndares) {
         if (instance == null) {
-            instance = new Elevador(totalAndares);
+            instance = new ElevadorOLD(totalAndares);
         }
         return instance;
     }
@@ -49,6 +53,18 @@ public class Elevador {
     public void adicionarRequisicao(int andar) {
         if (!filaRequisicoes.contains(andar)) {
             filaRequisicoes.add(andar);
+        }
+    }
+
+    public void adicionarRequisicaoExternaSubir(int andar) {
+        if (!requisicoesExternasSubir.contains(andar)) {
+            requisicoesExternasSubir.add(andar);
+        }
+    }
+
+    public void adicionarRequisicaoExternaDescer(int andar) {
+        if (!requisicoesExternasDescer.contains(andar)) {
+            requisicoesExternasDescer.add(andar);
         }
     }
 
@@ -77,21 +93,41 @@ public class Elevador {
     // Move o elevador para os andares da fila de forma otimizada
     public void visitarAndares() {
         ordenarFila();
-        while (!filaRequisicoes.isEmpty()) {
-            int proximoAndar = filaRequisicoes.get(0);  // Remove o primeiro andar da fila
-            fecharPorta();
-            // Pausa de 1.5 segundos antes do movimento
-            try {
-                Thread.sleep(1500);  // Simula a pausa antes do movimento
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        while (!filaRequisicoes.isEmpty() || !requisicoesExternasSubir.isEmpty() || !requisicoesExternasDescer.isEmpty()) {
+            int proximoAndar;
+
+            if (estadoAtual instanceof Subindo) {
+                if (!filaRequisicoes.isEmpty()) {
+                    proximoAndar = filaRequisicoes.get(0);  // Atende o primeiro da fila
+                    if (proximoAndar > andarAtual) {  // Garante que a prioridade é dos andares acima
+                        moverPara(proximoAndar);
+                        filaRequisicoes.remove(0);
+                    }
+                } else if (!requisicoesExternasSubir.isEmpty()) {
+                    proximoAndar = requisicoesExternasSubir.get(0);  // Atende os pedidos de fora (subir)
+                    moverPara(proximoAndar);
+                    requisicoesExternasSubir.remove(0);
+                }
+            } else if (estadoAtual instanceof Descendo) {
+                if (!filaRequisicoes.isEmpty()) {
+                    proximoAndar = filaRequisicoes.get(0);
+                    if (proximoAndar < andarAtual) {  // Garante que a prioridade é dos andares abaixo
+                        moverPara(proximoAndar);
+                        filaRequisicoes.remove(0);
+                    }
+                } else if (!requisicoesExternasDescer.isEmpty()) {
+                    proximoAndar = requisicoesExternasDescer.get(0);  // Atende os pedidos de fora (descer)
+                    moverPara(proximoAndar);
+                    requisicoesExternasDescer.remove(0);
+                }
             }
 
-            moverPara(proximoAndar);
-            filaRequisicoes.remove(0);
-
-            abrirPorta();
-
+            // Parar quando todas as solicitações forem atendidas
+            if (filaRequisicoes.isEmpty() && requisicoesExternasSubir.isEmpty() && requisicoesExternasDescer.isEmpty()) {
+                System.out.println("Elevador parado no andar " + andarAtual);
+                estadoAtual = new Parado();
+                notificarObservadores("Parado");
+            }
         }
     }
 
