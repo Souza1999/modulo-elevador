@@ -58,7 +58,7 @@ public class Painel implements Observer {
 ## 3. **State**
 O padrão State é utilizado para gerenciar o comportamento do elevador dependendo do seu estado atual. O elevador pode estar no estado de subindo, descendo ou parado, e cada um desses estados possui comportamentos específicos para mover o elevador, abrir ou fechar a porta.
 
-Implementação:
+#### Implementação:
 A interface EstadoElevador define os métodos mover, abrirPorta, e fecharPorta.
 As classes Subindo, Descendo, e Parado implementam essa interface, fornecendo o comportamento específico de cada estado.
 
