@@ -1,6 +1,8 @@
 package main.elevador;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class Elevador {
@@ -33,6 +35,7 @@ public class Elevador {
     // Registra um observador (como o Painel)
     public void registrarObservador(Observer observador) {
         observadores.add(observador);
+        System.out.println("Observador registrado: " + observador.getClass().getSimpleName());
     }
 
     // Notifica todos os observadores sobre mudanças no elevador
@@ -49,11 +52,80 @@ public class Elevador {
         }
     }
 
-    // Move o elevador para o andar desejado
+    // Ordena a fila de requisições otimizando o percurso
+    private void ordenarFila() {
+        Collections.sort(filaRequisicoes, new Comparator<Integer>() {
+            @Override
+            public int compare(Integer andar1, Integer andar2) {
+                int distancia1 = Math.abs(andarAtual - andar1);
+                int distancia2 = Math.abs(andarAtual - andar2);
+
+                // Se as distâncias forem iguais, priorize baseado no estado (subindo/descendo)
+                if (distancia1 == distancia2) {
+                    if (estadoAtual instanceof Subindo) {
+                        return Integer.compare(andar1, andar2); // Prioriza o andar maior
+                    } else if (estadoAtual instanceof Descendo) {
+                        return Integer.compare(andar2, andar1); // Prioriza o andar menor
+                    }
+                }
+
+                return Integer.compare(distancia1, distancia2); // Ordena pela menor distância
+            }
+        });
+    }
+
+    // Move o elevador para os andares da fila de forma otimizada
+    public void visitarAndares() {
+        ordenarFila();
+        while (!filaRequisicoes.isEmpty()) {
+            int proximoAndar = filaRequisicoes.remove(0);  // Remove o primeiro andar da fila
+            fecharPorta();
+            // Pausa de 1.5 segundos antes do movimento
+            try {
+                Thread.sleep(1500);  // Simula a pausa antes do movimento
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            moverPara(proximoAndar);
+        }
+    }
+
+    // Método para mover o elevador para o andar desejado
     public void moverPara(int andar) {
         estadoAtual.mover(this, andar);
-        notificarObservadores(estadoAtual.getClass().getSimpleName()); // Notifica após a mudança de estado
     }
+
+    //metodo antigo
+/* // Move o elevador para o andar desejado
+    public void moverPara(int andar) {
+
+        if (andar == this.andarAtual) {
+            // Caso o elevador já esteja no andar solicitado
+            System.out.println("O elevador já está no andar " + andar);
+            // Certifica-se de que a porta está aberta
+            if (!isPortaAberta()) {
+                abrirPorta();
+                notificarObservadores("Porta Aberta");
+            }
+//            notificarObservadores("Elevador já está no andar " + andar);
+            return; // Não realiza movimentação
+        }
+
+        fecharPorta();        //Fecha a porta antes de se mover
+        estadoAtual.mover(this, andar);        //Movimento do elevador
+
+        //Notifica ao chegar no andar destino
+        //notificarObservadores("Elevador chegou ao andar " + andar);
+
+        // Só abre a porta e notifica "Porta Aberta" se ela estiver fechada
+        if (!isPortaAberta()) {
+            abrirPorta();
+            notificarObservadores("Porta Aberta");
+        }
+
+    }
+
+    */
 
     // Métodos para abrir e fechar a porta
     public void abrirPorta() {
@@ -63,7 +135,6 @@ public class Elevador {
 
     public void fecharPorta() {
         estadoAtual.fecharPorta(this);
-        notificarObservadores("Porta Fechada");
     }
 
     // Getters e Setters

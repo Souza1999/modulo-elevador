@@ -10,6 +10,14 @@ public class Subindo implements EstadoElevador {
         for (int i = elevador.getAndarAtual(); i <= andarDestino; i++) {
             System.out.println("Andar: " + i);
             elevador.setAndarAtual(i);
+
+            // Introduz uma pausa de 2 segundos entre cada andar
+            try {
+                Thread.sleep(2000); // 2000 milissegundos =2 segundos
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
         }
 
         // Quando chega ao andar de destino, abre a porta e muda o estado para Parado
@@ -26,9 +34,15 @@ public class Subindo implements EstadoElevador {
     public void fecharPorta(Elevador elevador) {
         if (elevador.isPortaAberta()) {
             System.out.println("Fechando porta...");
+            try {
+                Thread.sleep(1500);  // Simula o tempo para fechar a porta (1.5 segundos)
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             elevador.setPortaAberta(false);
+
         } else {
-            System.out.println("A porta já está fechada.");
+            System.out.println("A porta está fechada.");
         }
     }
 }
