@@ -1,0 +1,74 @@
+@startuml
+
+class Elevador {
+    - static Elevador instance
+    - int andarAtual
+    - int totalAndares
+    - boolean portaAberta
+    - EstadoElevador estadoAtual
+    - List<Integer> botoesPressionados
+    - List<Integer> filaRequisicoesSubir
+    - List<Integer> filaRequisicoesDescer
+    - List<Observer> observadores
+    - Elevador(int totalAndares)
+    + static Elevador getInstance(int totalAndares)
+    + void registrarObservador(Observer observador)
+    + void notificarObservadores(String status)
+    + void pressionarBotaoInterno(int andar)
+    + void adicionarRequisicaoExternaSubir(int andar)
+    + void adicionarRequisicaoExternaDescer(int andar)
+    + void visitarAndares()
+    + void moverPara(int andar)
+    + void abrirPorta()
+    + void fecharPorta()
+    + int getAndarAtual()
+}
+
+interface EstadoElevador {
+    + void mover(Elevador elevador, int andarDestino)
+    + void abrirPorta(Elevador elevador)
+    + void fecharPorta(Elevador elevador)
+}
+
+class Subindo {
+    + void mover(Elevador elevador, int andarDestino)
+    + void abrirPorta(Elevador elevador)
+    + void fecharPorta(Elevador elevador)
+}
+
+class Descendo {
+    + void mover(Elevador elevador, int andarDestino)
+    + void abrirPorta(Elevador elevador)
+    + void fecharPorta(Elevador elevador)
+}
+
+class Parado {
+    + void mover(Elevador elevador, int andarDestino)
+    + void abrirPorta(Elevador elevador)
+    + void fecharPorta(Elevador elevador)
+}
+
+interface Observer {
+    + void atualizar(int andarAtual, String status, List<Integer> botoesPressionados)
+}
+
+class Painel {
+    + void atualizar(int andarAtual, String status, List<Integer> botoesPressionados)
+}
+
+class BotaoExterno {
+    - int andar
+    - boolean subir
+    + BotaoExterno(int andar, boolean subir)
+    + void pressionar()
+}
+
+Elevador --> EstadoElevador : "utiliza para definir o estado"
+Elevador --> Observer : "notifica observadores"
+Subindo --|> EstadoElevador : "implementa"
+Descendo --|> EstadoElevador : "implementa"
+Parado --|> EstadoElevador : "implementa"
+Painel --|> Observer : "implementa"
+BotaoExterno --> Elevador : "chama o elevador"
+
+@enduml

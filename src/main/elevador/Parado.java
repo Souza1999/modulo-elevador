@@ -30,7 +30,7 @@ public class Parado implements EstadoElevador {
             elevador.setPortaAberta(true);
             System.out.println("Porta aberta!");
         } else {
-            System.out.println("*Limpando fila de requisições*");
+            System.out.println("");
         }
     }
 

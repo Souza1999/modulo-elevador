@@ -5,33 +5,34 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class ElevadorOLD {
-    private static ElevadorOLD instance;
+public class Elevador {
+    private static Elevador instance;
     private int andarAtual;
     private int totalAndares;
     private boolean portaAberta;
     private EstadoElevador estadoAtual;
     private List<Integer> filaRequisicoes;
-    private List<Observer> observadores; // Lista de observadores
     private List<Integer> requisicoesExternasSubir;
     private List<Integer> requisicoesExternasDescer;
+    private List<Observer> observadores;
 
     // Construtor privado para garantir o padrão Singleton
-    private ElevadorOLD(int totalAndares) {
+    private Elevador(int totalAndares) {
         this.andarAtual = 0; // O elevador começa no térreo
         this.totalAndares = totalAndares;
         this.portaAberta = true; // Começa com a porta aberta
         this.estadoAtual = new Parado(); // Estado inicial do elevador
         this.filaRequisicoes = new ArrayList<>();
-        this.observadores = new ArrayList<>(); // Inicializa a lista de observadores
         this.requisicoesExternasSubir = new ArrayList<>();
         this.requisicoesExternasDescer = new ArrayList<>();
+        this.observadores = new ArrayList<>();
     }
 
     // Método para obter a única instância do elevador (Singleton)
-    public static ElevadorOLD getInstance(int totalAndares) {
+    //A instância é armazenada em um atributo estático chamado instance, garantindo que ela seja compartilhada em todo o sistema
+    public static Elevador getInstance(int totalAndares) {
         if (instance == null) {
-            instance = new ElevadorOLD(totalAndares);
+            instance = new Elevador(totalAndares);
         }
         return instance;
     }
@@ -45,7 +46,7 @@ public class ElevadorOLD {
     // Notifica todos os observadores sobre mudanças no elevador
     public void notificarObservadores(String status) {
         for (Observer observador : observadores) {
-            observador.atualizar(andarAtual, status, filaRequisicoes);
+            observador.atualizar(andarAtual, status, filaRequisicoes, requisicoesExternasSubir, requisicoesExternasDescer);
         }
     }
 
@@ -56,12 +57,14 @@ public class ElevadorOLD {
         }
     }
 
+    // Adiciona uma requisição externa de subir
     public void adicionarRequisicaoExternaSubir(int andar) {
         if (!requisicoesExternasSubir.contains(andar)) {
             requisicoesExternasSubir.add(andar);
         }
     }
 
+    // Adiciona uma requisição externa de descer
     public void adicionarRequisicaoExternaDescer(int andar) {
         if (!requisicoesExternasDescer.contains(andar)) {
             requisicoesExternasDescer.add(andar);
@@ -90,83 +93,61 @@ public class ElevadorOLD {
         });
     }
 
-    // Move o elevador para os andares da fila de forma otimizada
     public void visitarAndares() {
         ordenarFila();
         while (!filaRequisicoes.isEmpty() || !requisicoesExternasSubir.isEmpty() || !requisicoesExternasDescer.isEmpty()) {
             int proximoAndar;
 
-            if (estadoAtual instanceof Subindo) {
-                if (!filaRequisicoes.isEmpty()) {
-                    proximoAndar = filaRequisicoes.get(0);  // Atende o primeiro da fila
-                    if (proximoAndar > andarAtual) {  // Garante que a prioridade é dos andares acima
-                        moverPara(proximoAndar);
-                        filaRequisicoes.remove(0);
-                    }
-                } else if (!requisicoesExternasSubir.isEmpty()) {
-                    proximoAndar = requisicoesExternasSubir.get(0);  // Atende os pedidos de fora (subir)
-                    moverPara(proximoAndar);
-                    requisicoesExternasSubir.remove(0);
-                }
-            } else if (estadoAtual instanceof Descendo) {
-                if (!filaRequisicoes.isEmpty()) {
-                    proximoAndar = filaRequisicoes.get(0);
-                    if (proximoAndar < andarAtual) {  // Garante que a prioridade é dos andares abaixo
-                        moverPara(proximoAndar);
-                        filaRequisicoes.remove(0);
-                    }
-                } else if (!requisicoesExternasDescer.isEmpty()) {
-                    proximoAndar = requisicoesExternasDescer.get(0);  // Atende os pedidos de fora (descer)
-                    moverPara(proximoAndar);
-                    requisicoesExternasDescer.remove(0);
-                }
+            // Se houver requisições internas
+            if (!filaRequisicoes.isEmpty()) {
+                proximoAndar = filaRequisicoes.get(0);  // Remove o andar da fila após processar
+                fecharPorta();
+                moverPara(proximoAndar);
+                abrirPorta();
+
+                // Atualiza o painel com a fila de requisições atualizada
+                System.out.println("*Apagando luz do botão pressionado*");
+                filaRequisicoes.remove(0);  // Remover o andar da fila apenas após processar
+                notificarObservadores("Porta Aberta");
+            } else if (!requisicoesExternasSubir.isEmpty()) {  // Prioriza requisições de subir
+                proximoAndar = requisicoesExternasSubir.get(0);
+                fecharPorta();
+                moverPara(proximoAndar);
+                abrirPorta();
+
+                // Atualiza o painel com a fila de requisições atualizada
+                System.out.println("*Limpando fila de requisições externas de subir*");
+                requisicoesExternasSubir.remove(0);  // Remover o andar da fila de subir após processar
+                notificarObservadores("Porta Aberta");
+            } else if (!requisicoesExternasDescer.isEmpty()) {  // Prioriza requisições de descer
+                proximoAndar = requisicoesExternasDescer.get(0);
+                fecharPorta();
+                moverPara(proximoAndar);
+                abrirPorta();
+
+                // Atualiza o painel com a fila de requisições atualizada
+                System.out.println("*Limpando fila de requisições externas de descer*");
+                requisicoesExternasDescer.remove(0);  // Remover o andar da fila de descer após processar
+                notificarObservadores("Porta Aberta");
             }
 
-            // Parar quando todas as solicitações forem atendidas
-            if (filaRequisicoes.isEmpty() && requisicoesExternasSubir.isEmpty() && requisicoesExternasDescer.isEmpty()) {
-                System.out.println("Elevador parado no andar " + andarAtual);
-                estadoAtual = new Parado();
-                notificarObservadores("Parado");
+            // Pausa de 1.5 segundos antes de mover para o próximo andar
+            try {
+                Thread.sleep(1500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
+
+        // Notificar quando todas as requisições forem atendidas
+        System.out.println("Elevador parou no andar " + andarAtual + ". Todas as requisições foram atendidas.");
     }
+
 
     // Método para mover o elevador para o andar desejado
     public void moverPara(int andar) {
         estadoAtual.mover(this, andar);
     }
-
-    //metodo antigo
-/* // Move o elevador para o andar desejado
-    public void moverPara(int andar) {
-
-        if (andar == this.andarAtual) {
-            // Caso o elevador já esteja no andar solicitado
-            System.out.println("O elevador já está no andar " + andar);
-            // Certifica-se de que a porta está aberta
-            if (!isPortaAberta()) {
-                abrirPorta();
-                notificarObservadores("Porta Aberta");
-            }
-//            notificarObservadores("Elevador já está no andar " + andar);
-            return; // Não realiza movimentação
-        }
-
-        fecharPorta();        //Fecha a porta antes de se mover
-        estadoAtual.mover(this, andar);        //Movimento do elevador
-
-        //Notifica ao chegar no andar destino
-        //notificarObservadores("Elevador chegou ao andar " + andar);
-
-        // Só abre a porta e notifica "Porta Aberta" se ela estiver fechada
-        if (!isPortaAberta()) {
-            abrirPorta();
-            notificarObservadores("Porta Aberta");
-        }
-
-    }
-
-    */
 
     // Métodos para abrir e fechar a porta
     public void abrirPorta() {
@@ -176,6 +157,7 @@ public class ElevadorOLD {
 
     public void fecharPorta() {
         estadoAtual.fecharPorta(this);
+        notificarObservadores("Porta Fechada");
     }
 
     // Getters e Setters
