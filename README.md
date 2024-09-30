@@ -1,6 +1,6 @@
 # Sistema de Controle de Elevador
 
-Este projeto implementa um sistema de controle de elevador usando **padrões de design** para simular o comportamento de um elevador que pode ser requisitado tanto internamente (pelos passageiros dentro do elevador) quanto externamente (pelos botões de chamada nos andares). O sistema gerencia as requisições de maneira eficiente, utilizando filas de requisições separadas para subir e descer, e exibindo o estado do elevador em um painel.
+Este projeto implementa um sistema de controle de elevador usando **padrões de design** para simular o comportamento de um elevador que pode ser requisitado tanto internamente (pelos passageiros dentro do elevador) quanto externamente (pelos botões de chamada nos andares). O sistema gerencia as requisições de maneira eficiente, utilizando filas de requisições separadas para subir e descer, e exibindo o estado do elevador em um painel. As portas abrem e fecham automaticamente e a cada evento importante, o Painel é atualizado.
 
 ## Design Patterns Aplicados
 
