@@ -8,8 +8,9 @@ public class Subindo implements EstadoElevador {
 
         // Simula a subida do elevador, passando pelos andares até chegar ao destino
         for (int i = elevador.getAndarAtual(); i <= andarDestino; i++) {
-            System.out.println("Andar: " + i);
+           // System.out.println("Andar: " + i);
             elevador.setAndarAtual(i);
+            elevador.notificarObservadores("Subindo");
 
             // Introduz uma pausa de 2 segundos entre cada andar
             try {

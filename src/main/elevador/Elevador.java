@@ -39,7 +39,7 @@ public class Elevador {
     }
 
     // Notifica todos os observadores sobre mudanças no elevador
-    private void notificarObservadores(String status) {
+    public void notificarObservadores(String status) {
         for (Observer observador : observadores) {
             observador.atualizar(andarAtual, status, filaRequisicoes);
         }
@@ -78,7 +78,7 @@ public class Elevador {
     public void visitarAndares() {
         ordenarFila();
         while (!filaRequisicoes.isEmpty()) {
-            int proximoAndar = filaRequisicoes.remove(0);  // Remove o primeiro andar da fila
+            int proximoAndar = filaRequisicoes.get(0);  // Remove o primeiro andar da fila
             fecharPorta();
             // Pausa de 1.5 segundos antes do movimento
             try {
@@ -86,7 +86,12 @@ public class Elevador {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
             moverPara(proximoAndar);
+            filaRequisicoes.remove(0);
+
+            abrirPorta();
+
         }
     }
 

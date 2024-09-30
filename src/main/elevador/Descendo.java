@@ -7,8 +7,10 @@ public class Descendo implements EstadoElevador {
         System.out.println("Elevador descendo...");
 
         for (int i = elevador.getAndarAtual(); i >= andarDestino; i--) {
-            System.out.println("Andar: " + i);
+            //System.out.println("Andar: " + i);
             elevador.setAndarAtual(i);
+
+            elevador.notificarObservadores("Descendo");
 
             // Introduz uma pausa de 2 segundos entre cada andar
             try {
